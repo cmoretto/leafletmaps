@@ -10,7 +10,7 @@ var leaflet_map = (function (d3, L) {
 
     var _self = {};
 
-    _self.loadMap = function (graph_id, leaflet_url, properties) {
+    _self.loadMap = function (graph_id, leaflet_url, properties, attribution) {
         var map = L.map("mapid_" + graph_id, {
         });
 
@@ -28,7 +28,7 @@ var leaflet_map = (function (d3, L) {
 			for (var i in data){
 				if($.inArray(data[i]['year'], years) < 0) {
 					if (data[i]['year']){
-						years.push(data[i]['year']);
+						years.push(parseFloat(data[i]['year']) );
 					}
 				} 
 			}	
@@ -38,8 +38,8 @@ var leaflet_map = (function (d3, L) {
 				$(years).each(function() {
 					sel.append($("<option>").attr('value',this).text(this));
 				});
-				selected_year = years[years.length-1];
-				$("#select_year option:last").attr("selected", "selected");
+                selected_year = d3.max(years, function(d) { return d; });
+				$("#select_year option[value='"+selected_year+"']").attr('selected',true);
 				
 				$(document).on('change', '#select_year', function(){
 					selected_year = parseInt($(this).val());
@@ -49,19 +49,25 @@ var leaflet_map = (function (d3, L) {
 			update_countries(selected_year);
 			
 			function update_countries(){
-				var data_array = [];
-				
+                var data_array = [];
+                var new_countries = [];
+                // populate density
 				for (var k in countries['features']){
-					var c = countries['features'][k];
+                    var c = countries['features'][k];
+                    // remove old data
 					c['properties']['density'] = undefined;
 					for (var i in data){
 						if (c['id'] == data[i]['country'] && data[i]['year'] == selected_year){
-							c['properties']['density'] = data[i]['density'];
-							data_array.push(c['properties']['density']);
+                            var density = data[i]['density'];
+                            if ($.isNumeric(density)){
+                                c['properties']['density'] = density;
+                                new_countries.push(c);
+                                data_array.push(density);
+                            }
 						}
 					}
-				}
-			
+                }
+
 				var min = d3.min(data_array, function(d) { return d; });
 				var max = d3.max(data_array, function(d) { return d; });
 
@@ -89,7 +95,7 @@ var leaflet_map = (function (d3, L) {
 
 				info = _self.addInfo(map, infotitle, infodescription);
 				legend = _self.addLegend(map, scale, fractions, max, min);
-				_self.addMap(map, mapUrl, scale, info);
+				_self.addMap(map, mapUrl, scale, info, attribution, new_countries);
 
 				
 			}
@@ -97,10 +103,10 @@ var leaflet_map = (function (d3, L) {
       
     };
 
-    _self.addMap = function (rootMap, mapUrl, scale, info) {
-        L.tileLayer(mapUrl, { attribution: '' }).addTo(rootMap);
+    _self.addMap = function (rootMap, mapUrl, scale, info, attribution, new_countries) {
+        L.tileLayer(mapUrl, { attribution: attribution }).addTo(rootMap);
 		
-        _self.geojson = L.geoJson(countries, {
+        _self.geojson = L.geoJson(new_countries, {
             style: function (feature) {
                 return {
                     fillColor: scale.getColor(feature.properties.density),

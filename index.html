@@ -36,11 +36,15 @@
 
 
 	<script type="text/javascript">
-    var leaflet_url_1 = '/data/aspettativa_nascita.csv';
+    /*var leaflet_url_1 = '/data/aspettativa_nascita.csv';
 	var properties = {"fractions": 8, "mincolor": "#FF0000", "mapurl": "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", "infodescription": "", "maxcolor": "#009933", "infotitle": ""}
+	var attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors | <a href="http://www.worldbank.org/">data source </a>'
+	leaflet_map.loadMap(1, leaflet_url_1, properties, attribution);*/
 	
-    leaflet_map.loadMap(1, leaflet_url_1, properties);
-	
-	
+
+	var leaflet_url_1 = '/data/indice_corruzione.csv';
+	var properties = {"fractions": 8, "mincolor": "#FF0000", "mapurl": "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", "infodescription": "", "maxcolor": "#009933", "infotitle": ""}
+	var attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors | <a href="	https://www.transparency.org/news/feature/corruption_perceptions_index_2017">data source </a>'
+	leaflet_map.loadMap(1, leaflet_url_1, properties, attribution);
 	</script>
 </body>

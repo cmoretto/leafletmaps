@@ -1,4 +1,6 @@
 var init_datatable = (function ($) {
+    $.fn.dataTable.ext.errMode = 'none';
+
     'use strict';
     var _self = {};
     _self.init = function ($table, data) {

@@ -2,21 +2,24 @@ var init_multiline = (function ($) {
 
     'use strict';
     var _self = {};
-    _self.init = function (data) {
+    _self.init = function (input_data) {
+        var data = input_data; //jQuery.extend(true, {}, input_data);
         // Set the dimensions of the canvas / graph
         var margin = {top: 30, right: 20, bottom: 70, left: 50},
         width = 600 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
         // Parse the date / time
+        var parseTime = d3.timeParse("%Y");
+        
         // Set the ranges
         var x = d3.scaleTime().range([0, width]);  
         var y = d3.scaleLinear().range([height, 0]);
 
         // Define the line
         var densityline = d3.line()	
-        .x(function(d) { return x(d.year); })
-        .y(function(d) { return y(d.density); });
+            .x(function(d) { return x(d.year); })
+            .y(function(d) { return y(d.density); });
 
         // Adds the svg canvas
         d3.select("#multiline").select("*").remove();
@@ -28,7 +31,7 @@ var init_multiline = (function ($) {
 
         // Get the data
         data.forEach(function(d) {
-            d.year = d.year;
+            d.year = typeof d.year.getMonth === 'function' ? d.year : parseTime(d.year);
             d.density = +d.density;
         });
 

@@ -23,7 +23,8 @@ var leaflet_map = (function (d3, L) {
 		}).then(function (data) {
 			
 			var selected_year = undefined;
-			
+            _self.data = data;
+            
 			var years = [];
 			for (var i in data){
 				if($.inArray(data[i]['year'], years) < 0) {
@@ -49,6 +50,7 @@ var leaflet_map = (function (d3, L) {
 			update_countries(selected_year);
 			
 			function update_countries(){
+
                 var data_array = [];
                 var new_countries = [];
                 // populate density
@@ -97,7 +99,11 @@ var leaflet_map = (function (d3, L) {
 				legend = _self.addLegend(map, scale, fractions, max, min);
 				_self.addMap(map, mapUrl, scale, info, attribution, new_countries);
 
-				
+                var $table = $('#table');
+                init_datatable.init($table, new_countries);
+
+                init_multiline.init(data);
+
 			}
         });
       
@@ -105,6 +111,8 @@ var leaflet_map = (function (d3, L) {
 
     _self.addMap = function (rootMap, mapUrl, scale, info, attribution, new_countries) {
         L.tileLayer(mapUrl, { attribution: attribution }).addTo(rootMap);
+        var global_result = [];
+        var global_countries_selected = [];
 		
         _self.geojson = L.geoJson(new_countries, {
             style: function (feature) {
@@ -136,15 +144,47 @@ var leaflet_map = (function (d3, L) {
                         if (info) {
                             info.update(layer.feature.properties);
                         }
+
+                        var result = [];
+                        for (var i in _self.data){
+                            if (_self.data[i].country == e.target.feature.id){
+                                result.push( _self.data[i] );
+                            }
+                        }
+                        
+                        init_multiline.init(result);
                     },
                     mouseout: function (e) {
                         _self.geojson.resetStyle(e.target);
                         if (info) {
                             info.update();
+                            init_multiline.init(global_result);
                         }
                     },
                     click: function (e) {
-                        rootMap.fitBounds(e.target.getBounds());
+                        //rootMap.fitBounds(e.target.getBounds());
+
+                        if ($.inArray(e.target.feature.id, global_countries_selected) < 0) {
+                            global_countries_selected.push(e.target.feature.id);
+
+                            for (var i in _self.data){
+                                if (_self.data[i].country == e.target.feature.id){
+                                    global_result.push( _self.data[i] );
+                                }
+                            }
+                        }
+                        else { // remove from array
+                            global_result = jQuery.grep(global_result, function( n, i ) {
+                                return ( n.country !== e.target.feature.id );
+                            });
+                        }
+
+                        if (global_result.length == 0){
+                            init_multiline.init(_self.data);
+                        }
+                        else {
+                            init_multiline.init(global_result);
+                        }
                     }
                 });
             }
